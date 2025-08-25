@@ -3,12 +3,14 @@ import Input from '@/components/Input'
 import ScreenWrapper from '@/components/ScreenWrapper'
 import Typo from '@/components/Typo'
 import { colors, radius, spacingX, spacingY } from '@/constants/theme'
+import { useAuth } from '@/contexts/authContext'
 import { BackButtonProps } from '@/types'
 import { verticalScale } from '@/utils/styling'
 import AntDesign from '@expo/vector-icons/AntDesign'
 import { useRouter } from 'expo-router'
-import React, { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+
 
 const Register = ({ 
   backButtonProps = {} 
@@ -20,12 +22,22 @@ const Register = ({
   const emailRef = useRef("")
   const passwordRef = useRef("")
   const [isLoading, setIsLoading] = useState(false)
+  const {signUp} = useAuth()
+
   const handleSubmit = async () => {
     if(!emailRef.current || !nameRef.current || !passwordRef.current) {
       Alert.alert('Sign Up', 'Please fill in all fields.')
       return
     }
-    // Good to go
+    try {
+      setIsLoading(true)
+      await signUp(emailRef.current, passwordRef.current, nameRef.current, "")
+      // Registration successful, user will be automatically navigated to home by the signUp function
+    } catch(error:any) {
+      Alert.alert("Registration Error", error.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
   return (
     <KeyboardAvoidingView 
@@ -82,7 +94,7 @@ const Register = ({
                   </Button>
                   <View style={styles.footer}>
                     <Typo color={colors.neutral600}>
-                      Already have an account? 
+                      Already have an account?{" "}
                     </Typo>
                     <Pressable onPress={() => router.push('/(auth)/login')}>
                       <Typo fontWeight={'bold'} color={colors.primaryDark}>
@@ -129,6 +141,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 5,
+  },
+  button: {
+    // Add any button-specific styles here
   }
 });
 export default Register
