@@ -1,19 +1,12 @@
 import axios from 'axios';
-import { mockLogin, mockRegister } from './mockAuthService';
 
-// API URL configuration
-const API_URL = 'http://localhost:3000'; // Change this to your backend URL
-
-// Set to true to use mock service, false to use real API
-const USE_MOCK_SERVICE = false;
+// API URL configuration - matches your backend
+const API_URL = 'http://localhost:3000';
 
 export const login = async(
   email: string, 
   password: string
 ): Promise<{token: string}> => {
-  if (USE_MOCK_SERVICE) {
-    return mockLogin(email, password);
-  }
   
   try {
     console.log('Making login request to:', `${API_URL}/auth/login`);
@@ -24,7 +17,13 @@ export const login = async(
     })
     
     console.log('Login response:', response.data);
-    return response.data;
+    
+    // Your backend returns { success: true, token }
+    if (response.data.success && response.data.token) {
+      return { token: response.data.token };
+    } else {
+      throw new Error(response.data.msg || 'Login failed');
+    }
   } catch(error: any) {
     console.log("Login error details:", error);
     console.log("Error response:", error?.response?.data);
@@ -33,13 +32,14 @@ export const login = async(
     
     let msg = "Login failed";
     
+    // Handle your backend's error format
     if (error?.response?.data?.msg) {
       msg = error.response.data.msg;
     } else if (error?.response?.data?.message) {
       msg = error.response.data.message;
     } else if (error?.message) {
       if (error.message.includes('Network Error') || error.message.includes('ECONNREFUSED')) {
-        msg = "Cannot connect to server. Please make sure the server is running.";
+        msg = "Cannot connect to server. Please make sure your backend is running on port 3000.";
       } else {
         msg = error.message;
       }
@@ -55,10 +55,6 @@ export const register = async(
   name: string,
   avatar?: string | null
 ): Promise<{token: string}> => {
-  if (USE_MOCK_SERVICE) {
-    return mockRegister(email, password, name, avatar);
-  }
-  
   try {
     console.log('Making registration request to:', `${API_URL}/auth/register`);
     console.log('Registration data:', { email, name, avatar });
@@ -71,7 +67,13 @@ export const register = async(
     })
     
     console.log('Registration response:', response.data);
-    return response.data;
+    
+    // Your backend returns { success: true, token }
+    if (response.data.success && response.data.token) {
+      return { token: response.data.token };
+    } else {
+      throw new Error(response.data.msg || 'Registration failed');
+    }
   } catch(error: any) {
     console.log("Registration error details:", error);
     console.log("Error response:", error?.response?.data);
@@ -80,13 +82,14 @@ export const register = async(
     
     let msg = "Registration failed";
     
+    // Handle your backend's error format
     if (error?.response?.data?.msg) {
       msg = error.response.data.msg;
     } else if (error?.response?.data?.message) {
       msg = error.response.data.message;
     } else if (error?.message) {
       if (error.message.includes('Network Error') || error.message.includes('ECONNREFUSED')) {
-        msg = "Cannot connect to server. Please make sure the server is running.";
+        msg = "Cannot connect to server. Please make sure your backend is running on port 3000.";
       } else {
         msg = error.message;
       }
